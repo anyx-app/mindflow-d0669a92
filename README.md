@@ -281,6 +281,28 @@ function Header() {
 
 All components that use the shared CSS tokens (e.g., `bg-background text-foreground`) will respond automatically.
 
+#### Additional examples
+
+```tsx
+import { useTheme } from '@/theme/ThemeProvider'
+
+// Programmatically switch theme based on a user action or setting
+function Preferences() {
+  const { theme, setTheme } = useTheme()
+  return (
+    <div className="space-x-2">
+      <button className="px-2 py-1 border" onClick={() => setTheme('light')}>Light</button>
+      <button className="px-2 py-1 border" onClick={() => setTheme('dark')}>Dark</button>
+      <span className="ml-2 text-sm text-muted-foreground">Current: {theme}</span>
+    </div>
+  )
+}
+
+// Use tokens in custom styles
+// Example CSS (Tailwind applies via tokens):
+// bg-background text-foreground border-border ring-ring
+```
+
 ### Agent handoff
 
 - Theme selection is stored in `localStorage` under `theme` and applied via `document.documentElement.dataset.theme`.
