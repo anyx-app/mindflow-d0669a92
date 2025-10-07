@@ -8,6 +8,7 @@ import { AuthGuard } from "@/auth/AuthGuard";
 import AuthPage from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Themes from "@/pages/Themes";
+import Recipes from "@/pages/Recipes";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/themes" element={<Themes />} />
+              <Route path="/recipes" element={<Recipes />} />
               <Route
                 path="/dashboard"
                 element={

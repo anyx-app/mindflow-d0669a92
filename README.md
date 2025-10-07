@@ -8,7 +8,10 @@ A starter template for building scalable multi-page React applications with mode
 - React Router DOM v6.28.0 for client-side routing
 - TypeScript with predefined types and interfaces
 - Tailwind CSS with CSS variables and utility-first styling
-- Reusable UI components (Button, Header, Navigation, Footer)
+- **UI Recipe Library** - Pre-built animated components (heroes, features, effects)
+- **Framer Motion Integration** - Smooth animations and transitions
+- Enhanced Design System with 10 theme presets
+- 50+ reusable UI components (shadcn/ui + Radix UI primitives)
 - Custom utility functions (`cn`, `formatDate`)
 - Folder structure for pages, components, hooks, utils, types, and styles
 - ESLint configured for TypeScript and React Hooks
@@ -449,6 +452,84 @@ const accessible = meetsContrastRequirement('0 0% 100%', '0 0% 0%', 'AA', 'norma
 ### Routes
 
 - `/themes` - Theme showcase and customizer page
+- `/recipes` - UI recipe library showcase
+
+---
+
+## 🎨 UI Recipe Library
+
+Pre-built, animated UI components powered by Framer Motion that enable rapid development of stunning interfaces.
+
+### What's Included
+
+**Hero Sections** (3 variants):
+- `HeroGradient` - Animated aurora gradient with floating orbs
+- `HeroSpotlight` - Split layout with spotlight effect
+- `HeroMinimal` - Clean, minimal hero
+
+**Feature Sections** (3 types):
+- `BentoGrid` - Modern card grid with variable sizing
+- `FeatureGrid` - Spotlight cards in responsive grid
+- `FeatureShowcase` - Side-by-side feature presentation
+
+**Interactive Effects**:
+- `SpotlightCard` - Cursor-following spotlight
+- `GlowingCard` - Hover glow effect
+- `GradientBackground` - Animated gradient backgrounds
+
+**Animation Presets**:
+- Entrance animations (fade, slide, scale)
+- Stagger animations for lists
+- Hover effects (lift, scale, glow)
+- Scroll-triggered animations
+- Continuous animations (float, pulse, rotate)
+
+### Quick Start
+
+```tsx
+import { HeroGradient, FeatureGrid, BentoGrid } from '@/components/recipes'
+
+function LandingPage() {
+  return (
+    <>
+      <HeroGradient
+        title="Build Amazing Products"
+        subtitle="The fastest way to ship beautiful applications"
+        primaryCta="Start Free Trial"
+      />
+      
+      <FeatureGrid
+        features={[
+          { title: 'Fast', description: 'Lightning fast', icon: '⚡' },
+          { title: 'Secure', description: 'Bank-grade security', icon: '🔒' },
+        ]}
+        columns={3}
+      />
+    </>
+  )
+}
+```
+
+### Features
+
+- **Stunning Animations**: All components include smooth Framer Motion animations
+- **Responsive**: Mobile-first design that works on all screen sizes
+- **Type-Safe**: Full TypeScript support with comprehensive types
+- **Customizable**: Easy to adapt with className props and theme tokens
+- **Performance**: Optimized with scroll-triggered animations
+
+### Documentation
+
+See [RECIPES.md](./RECIPES.md) for complete documentation including:
+- All available recipes with examples
+- Animation preset usage
+- Customization guide
+- Best practices
+- Tips for AI generation
+
+### Demo
+
+Visit `/recipes` to see all recipes in action with interactive examples and code snippets
 
 ### Files
 
