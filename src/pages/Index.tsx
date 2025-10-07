@@ -1,250 +1,139 @@
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { GradientBackground } from '@/components/recipes/effects/GradientBackground'
-import { SpotlightCard } from '@/components/recipes/effects/SpotlightCard'
-import { staggerContainer, staggerItem } from '@/components/recipes/animations'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useNavigate } from 'react-router-dom'
-import { ThemeSelector } from '@/components/theme/ThemeSelector'
+import { ThemeToggle } from '@/components/common/ThemeToggle'
 
 export default function Index() {
   const navigate = useNavigate()
 
-  const features = [
-    { icon: '⚡', title: 'Lightning Fast', description: 'Optimized for performance' },
-    { icon: '🎨', title: 'Beautiful Design', description: '10 stunning theme presets' },
-    { icon: '🧩', title: 'Component Library', description: '50+ ready-to-use components' },
-    { icon: '🎬', title: 'Smooth Animations', description: 'Powered by Framer Motion' },
-    { icon: '📘', title: 'TypeScript', description: 'Full type safety built-in' },
-    { icon: '♿', title: 'Accessible', description: 'WCAG AAA compliant' },
-  ]
-
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4">
-        <GradientBackground variant="aurora" />
-        
-        {/* Animated orbs */}
-        <motion.div
-          className="absolute top-1/4 -left-20 w-72 h-72 bg-purple-500/30 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 -right-20 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-
-        {/* Theme Selector in top right */}
-        <div className="absolute top-6 right-6 z-20">
-          <ThemeSelector />
-        </div>
-
-        <motion.div
-          className="relative z-10 max-w-5xl mx-auto text-center"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
-          {/* Logo */}
-          <motion.div 
-            className="mb-8 flex justify-center"
-            variants={staggerItem}
-          >
-            <motion.img
-              src="/anyx-logo.png"
-              alt="AnyX Logo"
-              className="w-32 h-32 md:w-40 md:h-40 drop-shadow-2xl"
-              animate={{
-                y: [-10, 10, -10],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-          </motion.div>
-
-          <motion.h1
-            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400"
-            variants={staggerItem}
-          >
-            AnyX React Boilerplate
-          </motion.h1>
-          
-          <motion.p
-            className="text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-12 max-w-3xl mx-auto"
-            variants={staggerItem}
-          >
-            Build stunning applications with our production-ready starter template
-          </motion.p>
-
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-            variants={staggerItem}
-          >
-            <Button 
-              size="lg" 
-              onClick={() => navigate('/recipes')}
-              className="text-lg px-8 h-14"
-            >
-              Explore Recipes ✨
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              onClick={() => navigate('/themes')}
-              className="text-lg px-8 h-14"
-            >
-              View Themes 🎨
-            </Button>
-          </motion.div>
-
-          {/* Quick Stats */}
-          <motion.div
-            className="flex flex-wrap justify-center gap-8 text-sm text-muted-foreground"
-            variants={staggerItem}
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🚀</span>
-              <span>50+ Components</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🎨</span>
-              <span>10 Theme Presets</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">⚡</span>
-              <span>Lightning Fast</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">📘</span>
-              <span>TypeScript Ready</span>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <div className="text-muted-foreground text-sm">
-            <div className="mb-2">Scroll to explore</div>
-            <div className="flex justify-center">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-            </div>
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/anyx-logo.png" alt="AnyX" className="w-10 h-10" />
+            <h1 className="text-xl font-semibold">AnyX Boilerplate</h1>
           </div>
-        </motion.div>
-      </section>
+          <ThemeToggle />
+        </div>
+      </header>
 
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-background">
-        <div className="max-w-7xl mx-auto">
+      {/* Main Content */}
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="max-w-2xl w-full">
           <motion.div
-            className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="text-center mb-12"
           >
+            <img 
+              src="/anyx-logo.png" 
+              alt="AnyX Logo" 
+              className="w-24 h-24 mx-auto mb-6 opacity-90"
+            />
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Everything You Need
+              Welcome to AnyX
             </h2>
             <p className="text-xl text-muted-foreground">
-              Production-ready features for modern web applications
+              Your production-ready React boilerplate
             </p>
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="grid gap-4 md:grid-cols-2 mb-8"
           >
-            {features.map((feature, idx) => (
-              <motion.div key={idx} variants={staggerItem}>
-                <SpotlightCard>
-                  <div className="text-5xl mb-4">{feature.icon}</div>
-                  <h3 className="text-2xl font-semibold mb-3">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </SpotlightCard>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/recipes')}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-2xl">🎨</span>
+                  UI Recipes
+                </CardTitle>
+                <CardDescription>
+                  Pre-built animated components ready to use
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Hero sections, features, effects, and more
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-4xl mx-auto text-center">
+            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/themes')}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-2xl">🎭</span>
+                  Theme System
+                </CardTitle>
+                <CardDescription>
+                  10 beautiful theme presets to choose from
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Customize colors, spacing, and typography
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/dashboard')}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-2xl">📊</span>
+                  Dashboard
+                </CardTitle>
+                <CardDescription>
+                  Protected route example with auth
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Authentication and authorization built-in
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate('/showcase')}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-2xl">✨</span>
+                  Showcase
+                </CardTitle>
+                <CardDescription>
+                  See all features in action
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Full-featured demo with animations
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-center"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Build Something Amazing?
-            </h2>
-            <p className="text-xl text-muted-foreground mb-10">
-              Start with our recipes and themes, or build your own custom components
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
-                onClick={() => navigate('/recipes')}
-                className="text-lg px-10 h-14"
-              >
-                View Recipe Library
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => navigate('/themes')}
-                className="text-lg px-10 h-14"
-              >
-                Explore Themes
-              </Button>
-            </div>
+            <Button size="lg" onClick={() => navigate('/recipes')}>
+              Get Started
+            </Button>
           </motion.div>
         </div>
-      </section>
+      </main>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-border">
-        <div className="max-w-7xl mx-auto text-center text-muted-foreground">
-          <div className="flex justify-center mb-4">
-            <img
-              src="/anyx-logo.png"
-              alt="AnyX Logo"
-              className="w-12 h-12 opacity-50"
-            />
-          </div>
-          <p className="mb-2">Built with ❤️ using AnyX React Boilerplate</p>
-          <p className="text-sm">
-            Powered by React • TypeScript • Tailwind CSS • Framer Motion
-          </p>
+      <footer className="border-t border-border py-6">
+        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-muted-foreground">
+          <p>React • TypeScript • Tailwind CSS • Framer Motion</p>
         </div>
       </footer>
     </div>
