@@ -10,7 +10,9 @@ A starter template for building scalable multi-page React applications with mode
 - Tailwind CSS with CSS variables and utility-first styling
 - **UI Recipe Library** - Pre-built animated components (heroes, features, effects)
 - **Framer Motion Integration** - Smooth animations and transitions
-- Enhanced Design System with 10 theme presets
+- **Production Stability** - Error boundaries, component guards, runtime validation
+- Enhanced Design System with 20 theme presets (10 families × light/dark)
+- Brand-Aware Components - 8 brand flavors for automatic styling
 - 50+ reusable UI components (shadcn/ui + Radix UI primitives)
 - Custom utility functions (`cn`, `formatDate`)
 - Folder structure for pages, components, hooks, utils, types, and styles
@@ -22,10 +24,17 @@ A starter template for building scalable multi-page React applications with mode
 anyx-react-boilerplate/
 ├── docs/                      # Documentation
 │   ├── AI_DESIGN_GUIDE.md     # Design principles for AI agents
+│   ├── AI_AGENT_VALIDATION.md # Backend validation rules for AI
+│   ├── AI_AGENT_INSTRUCTIONS.md # AI agent control guide
 │   ├── UI_PATTERNS.md         # Copy-paste UI patterns
 │   ├── ROUTING.md             # Routing guide
 │   ├── RECIPES.md             # UI recipe library docs
-│   └── DESIGN_SYSTEM.md       # Design system reference
+│   ├── DESIGN_SYSTEM.md       # Design system reference
+│   ├── PRODUCTION_STABILITY.md # Production error prevention
+│   ├── BRAND_FLAVORS.md       # Brand personality system
+│   ├── HERO_SELECTION_GUIDE.md # Hero component guide
+│   ├── DASHBOARD_LAYOUTS.md   # Dashboard layout system
+│   └── CREATING_BRAND_AWARE_COMPONENTS.md # Component creation guide
 ├── public/                    # Static assets (e.g., index.html, images)
 ├── src/
 │   ├── pages/                 # Route-based pages
@@ -108,6 +117,66 @@ Best practices:
    npm run preview
    ```
 
+## 🛡️ Production Stability
+
+This boilerplate includes **critical** stability features to prevent common React errors in production:
+
+### Error Boundary
+All React errors are caught to prevent white screen of death:
+
+```tsx
+// Already installed in src/main.tsx
+<ErrorBoundary>
+  <App />
+</ErrorBoundary>
+```
+
+### Component Guards
+Runtime validation prevents type errors:
+
+```tsx
+import { ensureArray, ensureString } from '@/lib/component-guards'
+
+function MyComponent({ items, title }) {
+  // Protect against non-arrays → prevents ".map is not a function"
+  const safeItems = ensureArray(items)
+  
+  // Protect against non-strings → prevents Error #31
+  const safeTitle = ensureString(title, 'Default Title')
+  
+  return (
+    <div>
+      <h2>{safeTitle}</h2>
+      {safeItems.map(item => <div key={item.id}>{item.name}</div>)}
+    </div>
+  )
+}
+```
+
+### Common Errors & Fixes
+
+**Error #31: "Objects are not valid as React children"**
+```tsx
+// ❌ BAD - Passing object as child
+<Button>{buttonConfig}</Button>
+
+// ✅ GOOD - Extract string
+<Button>{buttonConfig.label}</Button>
+```
+
+**TypeError: ".map is not a function"**
+```tsx
+// ❌ BAD - No array validation
+items.map(item => ...)
+
+// ✅ GOOD - Ensure array
+(items || []).map(item => ...)
+// or
+ensureArray(items).map(item => ...)
+```
+
+**📖 See [Production Stability Guide](./docs/PRODUCTION_STABILITY.md) for complete prevention strategies.**
+
 6. **Scaffold UI primitives**
 
    ```bash
@@ -117,13 +186,25 @@ Best practices:
 
 ## 📚 Documentation
 
-All comprehensive guides are organized in the `/docs` folder:
+Comprehensive guides are available in the `./docs/` directory:
 
-- **[ROUTING.md](./docs/ROUTING.md)** - Complete routing guide (pages, navigation, protected routes)
-- **[DESIGN_SYSTEM.md](./docs/DESIGN_SYSTEM.md)** - Design system reference and theme customization
-- **[RECIPES.md](./docs/RECIPES.md)** - UI recipe library with animated components
-- **[AI_DESIGN_GUIDE.md](./docs/AI_DESIGN_GUIDE.md)** - Design principles for AI-assisted development
-- **[UI_PATTERNS.md](./docs/UI_PATTERNS.md)** - Copy-paste ready UI patterns and templates
+### Core Guides
+- **[Routing Guide](./docs/ROUTING.md)** - How to add pages, routes, and navigation
+- **[Design System](./docs/DESIGN_SYSTEM.md)** - Theme customization, tokens, and architecture
+- **[UI Recipes](./docs/RECIPES.md)** - Pre-built component patterns and examples
+- **[Production Stability](./docs/PRODUCTION_STABILITY.md)** - ⚠️ **CRITICAL** - Prevent common production errors
+
+### Brand & Design
+- **[Brand Flavors](./docs/BRAND_FLAVORS.md)** - 8 brand personalities for automatic styling
+- **[Hero Selection Guide](./docs/HERO_SELECTION_GUIDE.md)** - Choose the right hero component
+- **[Dashboard Layouts](./docs/DASHBOARD_LAYOUTS.md)** - Dashboard with sidebar navigation
+- **[Creating Brand-Aware Components](./docs/CREATING_BRAND_AWARE_COMPONENTS.md)** - Build adaptive components
+
+### AI Agent Guides
+- **[AI Design Guide](./docs/AI_DESIGN_GUIDE.md)** - Design principles for AI-generated UIs
+- **[AI Agent Instructions](./docs/AI_AGENT_INSTRUCTIONS.md)** - Backend control for top-notch design
+- **[AI Agent Validation](./docs/AI_AGENT_VALIDATION.md)** - Validation rules for AI code generation
+- **[UI Patterns](./docs/UI_PATTERNS.md)** - Ready-to-use UI patterns and structures
 
 ## 🛣️ Adding Pages and Routes
 

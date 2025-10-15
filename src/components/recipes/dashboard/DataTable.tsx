@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useBrand } from '@/hooks/useBrand'
+import { ensureArray, ensureString } from '@/lib/component-guards'
 import { Search, Download, Filter } from 'lucide-react'
 import { ReactNode, useState } from 'react'
 
@@ -80,14 +81,21 @@ export function DataTable<T extends Record<string, unknown>>({
   const { classes, config } = useBrand()
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Guard: Ensure data is always an array
+  const safeData = ensureArray<T>(data)
+  const safeTitle = ensureString(title, '')
+  const safeDescription = ensureString(description, '')
+  const safeSearchPlaceholder = ensureString(searchPlaceholder, 'Search...')
+  const safeEmptyMessage = ensureString(emptyMessage, 'No data available')
+
   // Simple client-side search
   const filteredData = searchQuery
-    ? data.filter((row) =>
+    ? safeData.filter((row) =>
         Object.values(row).some((value) =>
           String(value).toLowerCase().includes(searchQuery.toLowerCase())
         )
       )
-    : data
+    : safeData
 
   return (
     <motion.div
@@ -107,11 +115,11 @@ export function DataTable<T extends Record<string, unknown>>({
           <div className={cn('border-b', classes.cardPadding)}>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                {title && (
-                  <h3 className="text-lg font-semibold">{title}</h3>
+                {safeTitle && (
+                  <h3 className="text-lg font-semibold">{safeTitle}</h3>
                 )}
-                {description && (
-                  <p className="text-sm text-muted-foreground">{description}</p>
+                {safeDescription && (
+                  <p className="text-sm text-muted-foreground">{safeDescription}</p>
                 )}
               </div>
               
@@ -120,7 +128,7 @@ export function DataTable<T extends Record<string, unknown>>({
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      placeholder={searchPlaceholder}
+                      placeholder={safeSearchPlaceholder}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-9 w-64"
@@ -141,7 +149,7 @@ export function DataTable<T extends Record<string, unknown>>({
             </div>
           ) : filteredData.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center gap-2">
-              <p className="text-muted-foreground">{emptyMessage}</p>
+              <p className="text-muted-foreground">{safeEmptyMessage}</p>
               {searchQuery && (
                 <Button
                   variant="outline"
