@@ -21,6 +21,7 @@ Your project includes the **Anyx Common API** for server-side capabilities: LLM,
 
 **Methods:**
 - `llm({ model, messages })` - Chat completions
+- `vision({ prompt, images, model? })` - Vision API (image analysis)
 - `image({ prompt, size? })` - Image generation
 - `email({ to, subject, html })` - Email sending
 - `sms({ to, body })` - SMS sending
@@ -37,6 +38,7 @@ VITE_ANYX_PROJECT_ID=<auto-filled project id>
 All requests go through your backend, which attaches API keys:
 
 - `POST /api/common/llm` - LLM completions
+- `POST /api/common/llm/vision` - Vision API (image analysis)
 - `POST /api/common/image` - Image generation
 - `POST /api/common/email` - Email sending
 - `POST /api/common/sms` - SMS sending
@@ -57,6 +59,26 @@ All requests go through your backend, which attaches API keys:
 **Costs:**
 - LLM call = **1 aiCredit**
 - Image generation = **3 aiCredits**
+
+### Vision Credits (Separate Pool)
+
+**Models by Tier:**
+- **free**: ❌ Not available
+- **starter**: `gpt-4o-mini` only
+- **builder**: + `gpt-4o`
+- **pro/elite**: + `gpt-4o`
+
+**Vision Credit Limits:**
+| Tier    | Credits/Period |
+|---------|----------------|
+| Free    | 0              |
+| Starter | 10             |
+| Builder | 30             |
+| Pro     | 100            |
+| Elite   | 300            |
+
+**Cost:**
+- Vision call = **5 visionCredits**
 
 ### Integration Credits (Email & SMS)
 
@@ -104,6 +126,55 @@ const response = await anyx.llm({
 
 console.log(response.text)  // Access .text property for AI response
 ```
+
+### Vision API (Image Analysis)
+
+```typescript
+import { createAnyxClient, TierError, CreditExceededError } from '@/sdk'
+
+const anyx = createAnyxClient()
+
+try {
+  // Analyze images with AI
+  const response = await anyx.vision({
+    prompt: 'What products are in this image?',
+    images: [
+      'https://example.com/photo.jpg',
+      'data:image/jpeg;base64,/9j/4AAQSkZJRg...'
+    ],
+    model: 'gpt-4o-mini'  // Optional, defaults to gpt-4o-mini
+  })
+  
+  console.log('Analysis:', response.text)
+  console.log('Images processed:', response.imagesProcessed)
+  
+} catch (error) {
+  if (error instanceof TierError) {
+    // Free tier doesn't have vision access
+    console.error('Vision API requires starter tier or higher')
+    // Show upgrade CTA
+  } else if (error instanceof CreditExceededError) {
+    // Out of vision credits
+    console.error('Out of vision credits. Upgrade or wait for next period.')
+  }
+}
+```
+
+**Available Models:**
+- `gpt-4o-mini` (default, starter+ tier)
+- `gpt-4o` (builder+ tier, more accurate)
+
+**Supported Image Formats:**
+- URLs: Direct image links
+- Base64: `data:image/jpeg;base64,...`
+- Multiple images: Up to 10 images per request
+
+**Use Cases:**
+- Product catalog analysis
+- Receipt/document scanning
+- Image moderation
+- Visual search
+- Accessibility (image descriptions)
 
 ### Image Generation
 
@@ -238,6 +309,14 @@ const response = await anyx.llm({ prompt: '...' })
 // response.success is boolean
 // response.requestId is string
 
+// Vision response type
+const vision = await anyx.vision({ prompt: '...', images: ['...'] })
+// vision.text is string
+// vision.model is string
+// vision.imagesProcessed is number
+// vision.success is boolean
+// vision.requestId is string
+
 // Image response type
 const image = await anyx.image({ prompt: '...' })
 // image.url is string, image.revised_prompt is string
@@ -277,10 +356,17 @@ const sms = await anyx.sms({ to: '...', body: '...' })
    - Output: Clean UI with edit/apply actions
    - Example: "5-day workout plan" → formatted schedule
 
+5. **Vision-Powered Features** (Requires starter+ tier)
+   - Product catalog from photos
+   - Receipt/invoice scanner
+   - Image accessibility descriptions
+   - Visual search & matching
+   - Content moderation
+
 ### Implementation Requirements
 
 ✅ **Must have:**
-- Use SDK: `anyx.llm({ messages })`
+- Use SDK: `anyx.llm({ messages })` or `anyx.vision({ prompt, images })`
 - Handle errors gracefully (TierError, CreditExceededError)
 - Loading state while generating
 - Error toasts for failures
@@ -373,4 +459,5 @@ export default function AIAssistant() {
 - **CreditExceededError (402)**: Out of credits → show upgrade or wait message
 - **RateLimitedError (429)**: Too many requests → implement backoff, show countdown
 - **Image fails**: Verify tier (builder+), check size (1024x1024/1024x1536/1536x1024/auto)
+- **Vision fails**: Verify tier (starter+), check model (`gpt-4o` requires builder+), ensure valid image URLs/base64
 
