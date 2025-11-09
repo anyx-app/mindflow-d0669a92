@@ -377,6 +377,11 @@ const anyx = createAnyxClient({ apiKey: process.env.ANYX_COMMON_API_KEY })
   - Ensure your backend proxy injects `x-api-key` (browser should not send it).
   - For server/test usage only, pass `apiKey` to `createAnyxClient`.
 
+- **INSERT/UPDATE/DELETE fails with 404 errors** (Pre-Nov 9, 2025 shared schema projects)
+  - **Symptoms**: `PUT .../api/projects/[id]/update 404 Not Found`
+  - **Cause**: Old SDK only supported SELECT queries
+  - **Fix**: See `docs/MIGRATION_SHARED_SCHEMA_CRUD.md`
+
 ## 🎨 Enhanced Design System & Theming
 
 This boilerplate includes a production-ready design system with comprehensive theming capabilities, multiple preset themes, and visual customization tools.
