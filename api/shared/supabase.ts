@@ -1,9 +1,9 @@
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-import { BACKEND_CONFIG } from '../config.js';
-
-// Supabase Backend Proxy SDK (Hybrid Strategy)
-// Designed to run in Vercel Serverless Functions
-// Routes queries through Anyx Backend similarly to the frontend SDK
+// Supabase Backend Proxy SDK for Shared Schema Projects
+// Version: 2.0.0 (Gold Standard)
+// This SDK routes database queries through the Anyx backend API
+// and handles Storage operations directly via Supabase Client.
 
 interface QueryFilter {
   column: string;
@@ -43,24 +43,73 @@ class QueryBuilder {
     return this;
   }
 
-  neq(column: string, value: unknown) { this.filtersList.push({ column, operator: 'neq', value }); return this; }
-  gt(column: string, value: unknown) { this.filtersList.push({ column, operator: 'gt', value }); return this; }
-  gte(column: string, value: unknown) { this.filtersList.push({ column, operator: 'gte', value }); return this; }
-  lt(column: string, value: unknown) { this.filtersList.push({ column, operator: 'lt', value }); return this; }
-  lte(column: string, value: unknown) { this.filtersList.push({ column, operator: 'lte', value }); return this; }
-  like(column: string, value: string) { this.filtersList.push({ column, operator: 'like', value }); return this; }
-  ilike(column: string, value: string) { this.filtersList.push({ column, operator: 'ilike', value }); return this; }
-  in(column: string, values: unknown[]) { this.filtersList.push({ column, operator: 'in', value: values }); return this; }
-  is(column: string, value: null) { this.filtersList.push({ column, operator: 'is', value }); return this; }
-
-  order(column: string, options?: { ascending?: boolean }) {
-    this.orderList.push({ column, ascending: options?.ascending ?? true });
+  neq(column: string, value: unknown) {
+    this.filtersList.push({ column, operator: 'neq', value });
     return this;
   }
 
-  limit(count: number) { this.limitValue = count; return this; }
-  offset(count: number) { this.offsetValue = count; return this; }
-  single() { this.singleMode = true; return this; }
+  gt(column: string, value: unknown) {
+    this.filtersList.push({ column, operator: 'gt', value });
+    return this;
+  }
+
+  gte(column: string, value: unknown) {
+    this.filtersList.push({ column, operator: 'gte', value });
+    return this;
+  }
+
+  lt(column: string, value: unknown) {
+    this.filtersList.push({ column, operator: 'lt', value });
+    return this;
+  }
+
+  lte(column: string, value: unknown) {
+    this.filtersList.push({ column, operator: 'lte', value });
+    return this;
+  }
+
+  like(column: string, value: string) {
+    this.filtersList.push({ column, operator: 'like', value });
+    return this;
+  }
+
+  ilike(column: string, value: string) {
+    this.filtersList.push({ column, operator: 'ilike', value });
+    return this;
+  }
+
+  in(column: string, values: unknown[]) {
+    this.filtersList.push({ column, operator: 'in', value: values });
+    return this;
+  }
+
+  is(column: string, value: null) {
+    this.filtersList.push({ column, operator: 'is', value });
+    return this;
+  }
+
+  order(column: string, options?: { ascending?: boolean }) {
+    this.orderList.push({
+      column,
+      ascending: options?.ascending ?? true
+    });
+    return this;
+  }
+
+  limit(count: number) {
+    this.limitValue = count;
+    return this;
+  }
+
+  offset(count: number) {
+    this.offsetValue = count;
+    return this;
+  }
+
+  single() {
+    this.singleMode = true;
+    return this;
+  }
 
   insert(values: Record<string, unknown> | Record<string, unknown>[]) {
     this.operation = 'insert';
@@ -79,19 +128,29 @@ class QueryBuilder {
     return this;
   }
 
-  async execute() {
-    // STRICT process.env usage for Vercel Node Runtime
-    const projectId = process.env.VITE_PROJECT_ID || process.env.NEXT_PUBLIC_PROJECT_ID;
-    const backendUrl = process.env.VITE_ANYX_SERVER_URL || process.env.NEXT_PUBLIC_ANYX_SERVER_URL;
-    
-    // HYBRID STRATEGY for Schema Isolation:
-    // 1. Env Var (Preferred, set by automation)
-    // 2. Config File (Fallback, set by Agent)
-    const schema = process.env.SUPABASE_SCHEMA || process.env.VITE_SUPABASE_SCHEMA || BACKEND_CONFIG.schema;
+  async execute(): Promise<{ data: any; error: any }> {
+    // Helper to get environment variables safely in both Vite (browser) and Node.js (serverless) environments
+    const getEnv = (key: string) => {
+      // Check Node.js process.env first (for Vercel/Serverless)
+      // eslint-disable-next-line
+      if (typeof process !== 'undefined' && process.env && process.env[key]) {
+        // eslint-disable-next-line
+        return process.env[key];
+      }
+      // Check Vite import.meta.env (for Browser)
+      // eslint-disable-next-line
+      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
+        // eslint-disable-next-line
+        return import.meta.env[key];
+      }
+      return undefined;
+    };
+
+    const projectId = getEnv('VITE_PROJECT_ID') || getEnv('NEXT_PUBLIC_PROJECT_ID');
+    const backendUrl = getEnv('VITE_ANYX_SERVER_URL') || getEnv('NEXT_PUBLIC_ANYX_SERVER_URL');
 
     if (!projectId || !backendUrl) {
-      console.error('Environment check failed:', { hasProjectId: !!projectId, hasBackendUrl: !!backendUrl });
-      throw new Error(`CRITICAL_CONFIG_ERROR: Missing env vars in Backend. PID: ${!!projectId}, URL: ${!!backendUrl}`);
+      throw new Error('CRITICAL_CONFIG_ERROR: Missing VITE_PROJECT_ID or VITE_ANYX_SERVER_URL. Check .env');
     }
 
     const payload: Record<string, unknown> = {
@@ -99,35 +158,25 @@ class QueryBuilder {
       operation: this.operation || 'select'
     };
 
-    // INJECT SCHEMA: Critical fix for multi-tenant isolation
-    if (schema) {
-      payload.schema = schema;
-    } else {
-        // Warn if both missing - this likely means default to public which might fail for Shared Schema projects
-        console.warn('Backend SDK: SUPABASE_SCHEMA not set and BACKEND_CONFIG.schema is empty. Defaulting to public.');
-    }
-
-    // Construct payload (simplified for clarity)
     if (this.operation === 'insert') {
-        payload.values = this.insertValues;
-        payload.select = this.selectClause;
+      payload.values = this.insertValues;
+      if (this.selectClause) payload.select = this.selectClause;
     } else if (this.operation === 'update') {
-        payload.values = this.updateValues;
-        payload.filters = this.filtersList;
-        payload.select = this.selectClause;
+      payload.values = this.updateValues;
+      payload.filters = this.filtersList;
+      if (this.selectClause) payload.select = this.selectClause;
     } else if (this.operation === 'delete') {
-        payload.filters = this.filtersList;
+      payload.filters = this.filtersList;
     } else {
-        payload.select = this.selectClause || '*';
-        payload.filters = this.filtersList;
-        payload.order = this.orderList;
-        payload.limit = this.limitValue;
-        payload.offset = this.offsetValue;
-        payload.single = this.singleMode;
+      payload.select = this.selectClause || '*';
+      payload.filters = this.filtersList;
+      payload.order = this.orderList;
+      payload.limit = this.limitValue;
+      payload.offset = this.offsetValue;
+      payload.single = this.singleMode;
     }
 
     try {
-      // Use global fetch (available in Node 18+)
       const response = await fetch(`${backendUrl}/api/projects/${projectId}/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,25 +184,68 @@ class QueryBuilder {
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Database Proxy Failed: ${response.status} ${text}`);
+        const errorText = await response.text();
+        try {
+          const error = JSON.parse(errorText);
+          return { data: null, error: error.error || `Status: ${response.status}` };
+        } catch (e) {
+          return { data: null, error: `Status: ${response.status} - ${errorText}` };
+        }
       }
 
-      return await response.json();
+      const result = await response.json();
+      return result; // Backend returns { data: ..., error: ... }
+
     } catch (error) {
-      console.error('Backend Proxy Request Failed:', error);
-      throw error;
+      console.error("SDK Network Error:", error);
+      return { data: null, error: error instanceof Error ? error.message : 'Network Error' };
     }
   }
 
-  then<TResult1 = unknown, TResult2 = never>(
-    onfulfilled?: ((value: unknown) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
-  ) {
+  then<TResult1 = { data: any; error: any }, TResult2 = never>(
+    onfulfilled?: ((value: { data: any; error: any }) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
+  ): Promise<TResult1 | TResult2> {
     return this.execute().then(onfulfilled, onrejected);
   }
 }
 
+// Storage Client Singleton
+let _storageClient: SupabaseClient | null = null;
+
+const getStorageClient = () => {
+    if (_storageClient) return _storageClient.storage;
+
+    // Helper to get environment variables safely
+    const getEnv = (key: string) => {
+        // eslint-disable-next-line
+        if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
+        // eslint-disable-next-line
+        if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) return import.meta.env[key];
+        return undefined;
+    };
+
+    const supabaseUrl = getEnv('VITE_SUPABASE_URL') || getEnv('NEXT_PUBLIC_SUPABASE_URL');
+    const supabaseKey = getEnv('VITE_SUPABASE_ANON_KEY') || getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+
+    if (!supabaseUrl || !supabaseKey) {
+        console.warn('Supabase Storage: Missing credentials.');
+        return {
+            from: () => ({ 
+                upload: async () => ({ error: { message: 'Missing Storage Credentials' } }), 
+                getPublicUrl: () => ({ data: { publicUrl: '' } }) 
+            })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+    }
+
+    _storageClient = createClient(supabaseUrl, supabaseKey);
+    return _storageClient.storage;
+};
+
 export const supabase = {
-  from: (table: string) => new QueryBuilder(table)
+  from: (table: string) => new QueryBuilder(table),
+  get storage() {
+      return getStorageClient();
+  }
 };

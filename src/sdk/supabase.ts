@@ -1,7 +1,9 @@
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
 // Supabase Backend Proxy SDK for Shared Schema Projects
-// Version: 1.0.0
+// Version: 2.0.0 (Gold Standard)
 // This SDK routes database queries through the Anyx backend API
-// for secure access to shared schema databases
+// and handles Storage operations directly via Supabase Client.
 
 interface QueryFilter {
   column: string;
@@ -126,7 +128,7 @@ class QueryBuilder {
     return this;
   }
 
-  async execute() {
+  async execute(): Promise<{ data: any; error: any }> {
     // Helper to get environment variables safely in both Vite (browser) and Node.js (serverless) environments
     const getEnv = (key: string) => {
       // Check Node.js process.env first (for Vercel/Serverless)
@@ -148,7 +150,7 @@ class QueryBuilder {
     const backendUrl = getEnv('VITE_ANYX_SERVER_URL') || getEnv('NEXT_PUBLIC_ANYX_SERVER_URL');
 
     if (!projectId || !backendUrl) {
-      throw new Error('CRITICAL_CONFIG_ERROR: Missing VITE_PROJECT_ID or VITE_ANYX_SERVER_URL environment variables. Please check your .env file or deployment settings.');
+      throw new Error('CRITICAL_CONFIG_ERROR: Missing VITE_PROJECT_ID or VITE_ANYX_SERVER_URL. Check .env');
     }
 
     const payload: Record<string, unknown> = {
@@ -185,44 +187,65 @@ class QueryBuilder {
         const errorText = await response.text();
         try {
           const error = JSON.parse(errorText);
-          throw new Error(error.error || `Query failed with status: ${response.status}`);
+          return { data: null, error: error.error || `Status: ${response.status}` };
         } catch (e) {
-          throw new Error(`Query failed with status: ${response.status} and response: ${errorText}`);
+          return { data: null, error: `Status: ${response.status} - ${errorText}` };
         }
       }
 
       const result = await response.json();
-      return result;
+      return result; // Backend returns { data: ..., error: ... }
 
     } catch (error) {
-      // Log the specific network error for easier debugging
       console.error("SDK Network Error:", error);
-      // Re-throw a generic error to be handled by the UI
-      if (error instanceof Error && error.message.startsWith('CRITICAL_CONFIG_ERROR')) {
-          throw error;
-      }
-      throw new Error('Network request failed. Could not connect to the backend.');
+      return { data: null, error: error instanceof Error ? error.message : 'Network Error' };
     }
   }
 
-  then<TResult1 = unknown, TResult2 = never>(
-    onfulfilled?: ((value: unknown) => TResult1 | PromiseLike<TResult1>) | null,
-    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+  then<TResult1 = { data: any; error: any }, TResult2 = never>(
+    onfulfilled?: ((value: { data: any; error: any }) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
   ): Promise<TResult1 | TResult2> {
     return this.execute().then(onfulfilled, onrejected);
   }
-
-  catch<TResult = never>(
-    onrejected?: ((reason: unknown) => TResult | PromiseLike<TResult>) | null
-  ): Promise<unknown | TResult> {
-    return this.execute().catch(onrejected);
-  }
-
-  finally(onfinally?: (() => void) | null): Promise<unknown> {
-    return this.execute().finally(onfinally);
-  }
 }
 
+// Storage Client Singleton
+let _storageClient: SupabaseClient | null = null;
+
+const getStorageClient = () => {
+    if (_storageClient) return _storageClient.storage;
+
+    // Helper to get environment variables safely
+    const getEnv = (key: string) => {
+        // eslint-disable-next-line
+        if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
+        // eslint-disable-next-line
+        if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) return import.meta.env[key];
+        return undefined;
+    };
+
+    const supabaseUrl = getEnv('VITE_SUPABASE_URL') || getEnv('NEXT_PUBLIC_SUPABASE_URL');
+    const supabaseKey = getEnv('VITE_SUPABASE_ANON_KEY') || getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+
+    if (!supabaseUrl || !supabaseKey) {
+        console.warn('Supabase Storage: Missing credentials.');
+        return {
+            from: () => ({ 
+                upload: async () => ({ error: { message: 'Missing Storage Credentials' } }), 
+                getPublicUrl: () => ({ data: { publicUrl: '' } }) 
+            })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+    }
+
+    _storageClient = createClient(supabaseUrl, supabaseKey);
+    return _storageClient.storage;
+};
+
 export const supabase = {
-  from: (table: string) => new QueryBuilder(table)
+  from: (table: string) => new QueryBuilder(table),
+  get storage() {
+      return getStorageClient();
+  }
 };
