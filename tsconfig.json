@@ -2,10 +2,13 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -15,13 +18,11 @@
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
@@ -35,7 +36,10 @@
   },
   "include": [
     "src",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     "api",
+    "api/**/*.ts",
     "@tests",
     "vitest.config.ts"
   ],
@@ -44,5 +48,9 @@
     "vite.config.ts",
     "dist"
   ],
-  "references": [{ "path": "./tsconfig.node.json" }]
-} 
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
+}
